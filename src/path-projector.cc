@@ -34,6 +34,9 @@
 #include <hpp/core/steering-method.hh>
 #include <hpp/util/pointer.hh>
 #include <hpp/util/timer.hh>
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 
 namespace hpp {
 namespace core {
@@ -63,6 +66,9 @@ value_type PathProjector::d(ConfigurationIn_t q1, ConfigurationIn_t q2) const {
 
 PathPtr_t PathProjector::steer(ConfigurationIn_t q1,
                                ConfigurationIn_t q2) const {
+  
+  cout << "ici \n\n\n" << endl;
+  cout << typeid(*steeringMethod_).name() << endl;
   PathPtr_t result((*steeringMethod_)(q1, q2));
   // In the case of hermite path, we want the paths to be constrained.
   // assert (!result->constraints ());

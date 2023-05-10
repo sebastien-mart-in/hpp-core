@@ -50,7 +50,6 @@ Hermite::Hermite(const DevicePtr_t& device, ConfigurationIn_t init,
   parameters_.row(0).setZero();
   pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, init, end,
                                                            parameters_.row(3));
-
   projectVelocities(init, end);
 }
 

@@ -97,19 +97,24 @@ class HPP_CORE_DLLAPI PathPlanner {
   /// Store weak pointer to itself
   void init(const PathPlannerWkPtr_t& weak);
 
- private:
-  /// Reference to the problem
-  const ProblemConstWkPtr_t problem_;
-  /// Pointer to the roadmap.
-  const RoadmapPtr_t roadmap_;
+  /// \copydoc PathPlanner::stopWhenProblemIsSolved
+  bool stopWhenProblemIsSolved_;
   bool interrupt_;
+
   /// Maximal number of iterations to solve a problem
   /// reaching this bound raises an exception.
   unsigned long int maxIterations_;
   /// Time out (in seconds) before interrupting the planning
   double timeOut_;
-  /// \copydoc PathPlanner::stopWhenProblemIsSolved
-  bool stopWhenProblemIsSolved_;
+
+
+ private:
+  /// Reference to the problem
+  const ProblemConstWkPtr_t problem_;
+  /// Pointer to the roadmap.
+  const RoadmapPtr_t roadmap_;
+  
+  
 
   /// Store weak pointer to itself
   PathPlannerWkPtr_t weakPtr_;

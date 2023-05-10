@@ -26,6 +26,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 #include "hpp/core/path-projector/recursive-hermite.hh"
 
 #include <hpp/core/config-projector.hh>
@@ -69,7 +72,7 @@ RecursiveHermite::RecursiveHermite(const DistancePtr_t& distance,
 }
 
 bool RecursiveHermite::impl_apply(const PathPtr_t& path,
-                                  PathPtr_t& proj) const {
+                                  core::PathPtr_t& proj) const {
   assert(path);
   bool success = false;
   PathVectorPtr_t pv = HPP_DYNAMIC_PTR_CAST(PathVector, path);
@@ -107,6 +110,7 @@ bool RecursiveHermite::impl_apply(const PathPtr_t& path,
 }
 
 bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
+  cout << "done \n\n\n" << endl;
   ConstraintSetPtr_t constraints = path->constraints();
   if (!constraints) {
     proj = path;
@@ -120,7 +124,7 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
     proj = path;
     return true;
   }
-
+  cout << "done \n\n\n" << endl;
   steeringMethod_->constraints(constraints);
 
   const value_type thr = 2 * cp->errorThreshold() / M_;
@@ -135,11 +139,14 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
       ps.reserve(ips.size() - 1);
       IPs_t::const_iterator _ip1 = ips.begin();
       std::advance(_ip1, 1);
+
       for (IPs_t::const_iterator _ip0 = ips.begin(); _ip1 != ips.end();
            ++_ip0) {
+        cout << "done \n\n\n" << endl;
         ps.push_back(
             HPP_DYNAMIC_PTR_CAST(Hermite, steer(_ip0->second, _ip1->second)));
         ++_ip1;
+        cout << "done___h \n\n\n" << endl;
       }
     } else {
       p = HPP_DYNAMIC_PTR_CAST(Hermite, steer(path->initial(), path->end()));
@@ -148,9 +155,11 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
   } else {
     ps.push_back(p);
   }
+  cout << "done \n\n\n" << endl;
   PathVectorPtr_t res =
       PathVector::create(path->outputSize(), path->outputDerivativeSize());
   bool success = true;
+  cout << "done \n\n\n" << endl;
   for (std::size_t i = 0; i < ps.size(); ++i) {
     p = ps[i];
     p->computeHermiteLength();
@@ -158,6 +167,7 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
       res->appendPath(p);
       continue;
     }
+    cout << "done \n\n\n" << endl;
     PathVectorPtr_t r =
         PathVector::create(path->outputSize(), path->outputDerivativeSize());
     std::cout << p->hermiteLength() << " / " << thr << " : "
@@ -166,6 +176,7 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
     res->concatenate(r);
     if (!success) break;
   }
+cout << "done \n\n\n" << endl;
 #if HPP_ENABLE_BENCHMARK
   value_type min = std::numeric_limits<value_type>::max(), max = 0,
              totalLength = 0;
@@ -201,6 +212,7 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
       break;
   }
   return false;
+  cout << "done \n\n\n" << endl;
 }
 
 bool RecursiveHermite::recurse(const HermitePtr_t& path, PathVectorPtr_t& proj,

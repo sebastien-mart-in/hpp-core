@@ -51,8 +51,10 @@ class HPP_CORE_DLLAPI RecursiveHermite : public PathProjector {
   static RecursiveHermitePtr_t create(const ProblemConstPtr_t& problem,
                                       const value_type& step);
 
+  bool impl_apply(const PathPtr_t& path, core::PathPtr_t& projection) const;
+
+
  protected:
-  bool impl_apply(const PathPtr_t& path, PathPtr_t& projection) const;
 
   RecursiveHermite(const DistancePtr_t& distance,
                    const SteeringMethodPtr_t& steeringMethod,

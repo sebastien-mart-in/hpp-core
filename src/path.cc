@@ -27,6 +27,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 
+
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/weak_ptr.hpp>
 #include <hpp/core/config-projector.hh>
@@ -94,6 +98,7 @@ Path::Path(const interval_t& interval, size_type outputSize,
       outputSize_(outputSize),
       outputDerivativeSize_(outputDerivativeSize),
       constraints_() {
+  cout << "passed by path with interval, outputsizes and constrait" << endl;
   if (constraints) {
     constraints_ = HPP_STATIC_PTR_CAST(ConstraintSet, constraints->copy());
   }
