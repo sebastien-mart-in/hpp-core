@@ -87,6 +87,7 @@ struct sbf_traits {
 template <int _PolynomeBasis, int _Order>
 class HPP_CORE_DLLAPI Spline : public Path {
  public:
+  bool impl_compute(ConfigurationOut_t configuration, value_type t) const;
   enum {
     PolynomeBasis = _PolynomeBasis,
     Order = _Order,
@@ -293,7 +294,7 @@ class HPP_CORE_DLLAPI Spline : public Path {
 
   std::ostream& print(std::ostream& os) const;
 
-  bool impl_compute(ConfigurationOut_t configuration, value_type t) const;
+ 
 
   void impl_derivative(vectorOut_t res, const value_type& t,
                        size_type order) const;

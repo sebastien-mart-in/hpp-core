@@ -32,7 +32,12 @@
 #include <hpp/core/path-vector.hh>
 #include <hpp/util/indent.hh>
 #include <hpp/util/serialization.hh>
+
+#include <hpp/core/config-projector.hh>
 #include <stdexcept>
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 
 namespace hpp {
 namespace core {
@@ -66,6 +71,60 @@ std::size_t PathVector::rankAtParam(const value_type& param,
   assert(localParam <= paths_[res]->timeRange().second +
                            std::numeric_limits<float>::epsilon());
   return res;
+}
+
+void PathVector::checkPathAt(value_type t){
+  bool te_2;
+  PathPtr_t sub = paths_[0];
+  cout << "time range first " << sub-> timeRange().first << endl;
+  cout << "with t as time : \n" << sub->configAtParam(sub->timeRange().second,te_2) << endl;
+  if (constraints()){
+    if (constraints()->configProjector()){
+        constraints()->configProjector()->rightHandSideAt(t);
+    }
+    bool te;
+    value_type param = paramAtTime(t);
+    auto conf = configAtParam(param,te);
+    if (!constraints()->isSatisfied(conf)) {
+      cout << "ERROR CHECKPATH : conf didn't validate the constraint at time " << t << endl;
+      cout << "ERROR : conf : \n" << conf << endl;
+    }
+    else {
+      cout << "VALID : conf validate the constraint at time " << t << endl;
+      cout << "VALID : conf : \n" << conf << endl;
+    }
+  }
+  else {
+    value_type param = paramAtTime(t);
+    value_type loc_param;
+    std::size_t rank = rankAtParam(param,loc_param);
+    PathPtr_t sub_path = pathAtRank(rank);
+    cout << sub_path -> initial() << "\n" << sub_path->end() << endl;
+    cout << "RELAUNCH ON PATH RANK " << rank << " at param " << param << " local param " << loc_param << endl;
+    if (sub_path->constraints()){
+      if (sub_path->constraints()->configProjector()){
+          sub_path->constraints()->configProjector()->rightHandSideAt(t);
+      }
+
+      bool te;
+      auto conf = configAtParam(loc_param,te);
+
+      if (!sub_path->constraints()->isSatisfied(sub_path->end())) {
+        cout << "ERROR CHECKPATH : conf didn't validate the constraint at local param " << loc_param << endl;
+        cout << "ERROR : conf : \n" << conf << endl;      }
+      else {
+        cout << "VALID : conf validate the constraint at local param " << loc_param << endl;
+        cout << "VALID : conf : \n" << conf << endl;
+      }
+
+    }
+    else {
+      cout << "ERROR : no constraints on the checked path" << endl;
+    }
+  
+
+
+  }
 }
 
 void PathVector::appendPath(const PathPtr_t& path) {

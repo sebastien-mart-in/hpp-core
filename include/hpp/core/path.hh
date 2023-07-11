@@ -30,6 +30,9 @@
 #ifndef HPP_CORE_PATH_HH
 #define HPP_CORE_PATH_HH
 
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 #include <hpp/core/config.hh>
 #include <hpp/core/constraint-set.hh>
 #include <hpp/core/deprecated.hh>
@@ -70,6 +73,23 @@ namespace core {
  */
 class HPP_CORE_DLLAPI Path {
  public:
+
+  value_type paramAtTime(const value_type& time) const {
+    if (timeParam_) {
+      return timeParam_->value(time);
+    }
+    return time;
+
+  }
+
+  Configuration_t configAtParam(const value_type& param, bool& success) const {
+    Configuration_t result(outputSize());
+    success = impl_compute(result, param);
+    cout << success << "\n " <<result << endl;
+    if (!success) return result;
+    success = applyConstraints(result, param);
+    return result;
+  }
   /// \name Construction, destruction, copy
   /// \{
 
@@ -237,6 +257,9 @@ class HPP_CORE_DLLAPI Path {
   }
 
   /// \}
+public :
+  /// Should be called by child classes after having init.
+  virtual void checkPath() const;
 
  protected:
   /// Print interval of definition (and of parameters if relevant)
@@ -276,7 +299,7 @@ class HPP_CORE_DLLAPI Path {
 
   /// Interval of parameters
   interval_t paramRange_;
-
+ public : 
   /// Set the constraints
   /// \warning this method is protected for child classes that need to
   ///          initialize themselves before being sure that the initial and
@@ -285,8 +308,8 @@ class HPP_CORE_DLLAPI Path {
     constraints_ = constraint;
   }
 
-  /// Should be called by child classes after having init.
-  virtual void checkPath() const;
+  
+ protected :
 
   void timeRange(const interval_t& timeRange) {
     timeRange_ = timeRange;
@@ -305,13 +328,7 @@ class HPP_CORE_DLLAPI Path {
     return paramRange_.second - paramRange_.first;
   }
 
-  Configuration_t configAtParam(const value_type& param, bool& success) const {
-    Configuration_t result(outputSize());
-    success = impl_compute(result, param);
-    if (!success) return result;
-    success = applyConstraints(result, param);
-    return result;
-  }
+  
 
   /// \brief Function evaluation without applying constraints
   ///
@@ -345,16 +362,13 @@ class HPP_CORE_DLLAPI Path {
   /// Virtual implementation of \ref extract
   virtual PathPtr_t impl_extract(const interval_t& paramInterval) const;
 
+  
  private:
   /// Interval of definition
   interval_t timeRange_;
 
-  value_type paramAtTime(const value_type& time) const {
-    if (timeParam_) {
-      return timeParam_->value(time);
-    }
-    return time;
-  }
+  
+  
 
   bool applyConstraints(ConfigurationOut_t result,
                         const value_type& param) const;

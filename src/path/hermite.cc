@@ -26,6 +26,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 #include <hpp/core/config-projector.hh>
 #include <hpp/core/path/hermite.hh>
 #include <hpp/core/projection-error.hh>
@@ -49,7 +52,7 @@ Hermite::Hermite(const DevicePtr_t& device, ConfigurationIn_t init,
   base(init);
   parameters_.row(0).setZero();
   pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, init, end,
-                                                           parameters_.row(3));
+                                                           parameters_.row(3));                                                       
   projectVelocities(init, end);
 }
 
@@ -92,7 +95,8 @@ void Hermite::projectVelocities(ConfigurationIn_t qi, ConfigurationIn_t qe) {
 }
 
 void Hermite::computeHermiteLength() {
-  hermiteLength_ = (parameters_.bottomRows<3>() - parameters_.topRows<3>())
+  auto a = parameters_.bottomRows<3>() - parameters_.topRows<3>();
+  hermiteLength_ = (a)
                        .rowwise()
                        .norm()
                        .sum();

@@ -32,6 +32,13 @@
 #include <hpp/core/config.hh>
 #include <hpp/core/fwd.hh>
 #include <hpp/core/path/spline.hh>
+#include <hpp/core/config-projector.hh>
+#include <hpp/core/path/hermite.hh>
+#include <hpp/core/projection-error.hh>
+#include <hpp/pinocchio/configuration.hh>
+#include <hpp/pinocchio/device.hh>
+#include <hpp/pinocchio/liegroup.hh>
+#include <hpp/util/debug.hh>
 
 namespace hpp {
 namespace core {
@@ -42,6 +49,14 @@ namespace path {
 class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
  public:
   typedef Spline<BernsteinBasis, 3> parent_t;
+
+  static void all_info_about_hermite_path(HermitePtr_t path){
+  cout << "initial configuration : \n" << path->initial() << endl;
+  cout << "initial vector v0 : \n" << path->v0() << endl;
+  cout << "final configuration : \n" << path->end() << endl;
+  cout << "final vector v1 : \n" << path->v1() << endl;
+  cout << "hermiteLength : \n" << path->hermiteLength() << endl << endl;
+}
 
   /// Destructor
   virtual ~Hermite() {}
@@ -54,6 +69,8 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
     ptr->init(shPtr);
     return shPtr;
   }
+
+  
 
   /// Create copy and return shared pointer
   /// \param path path to copy
@@ -122,6 +139,15 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
 
   vector_t velocity(const value_type& t) const;
 
+  static HermitePtr_t create_with_timeRange(const DevicePtr_t& device, ConfigurationIn_t init,
+    ConfigurationIn_t end,
+    ConstraintSetPtr_t constraints, interval_t timeRange) {
+    Hermite* ptr = new Hermite(device, init, end, constraints, timeRange);
+    HermitePtr_t shPtr(ptr);
+    ptr->init(shPtr);
+  return shPtr;
+}
+
  protected:
   /// Print path in a stream
   virtual std::ostream& print(std::ostream& os) const {
@@ -139,6 +165,22 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
   /// Constructor with constraints
   Hermite(const DevicePtr_t& robot, ConfigurationIn_t init,
           ConfigurationIn_t end, ConstraintSetPtr_t constraints);
+
+  Hermite(const DevicePtr_t& device, ConfigurationIn_t init,
+                 ConfigurationIn_t end, ConstraintSetPtr_t constraints, interval_t timeRange)
+    : parent_t(device, timeRange, constraints),
+      init_(init),
+      end_(end),
+      hermiteLength_(-1) {
+  assert(init.size() == robot_->configSize());
+  assert(device);
+  base(init);
+  parameters_.row(0).setZero();
+  pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, init, end,
+                                                           parameters_.row(3));
+                                                           
+  projectVelocities(init, end);
+}
 
   /// Copy constructor
   Hermite(const Hermite& path);

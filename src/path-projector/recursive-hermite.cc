@@ -26,11 +26,45 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 
+#include <hpp/constraints/differentiable-function.hh>
+#include <hpp/constraints/implicit.hh>
+#include <hpp/core/config-projector.hh>
+#include <hpp/core/config-validations.hh>
+#include <hpp/core/configuration-shooter.hh>
+#include <hpp/core/path-validation.hh>
+#include <hpp/core/problem.hh>
+#include <hpp/core/roadmap.hh>
+#include <hpp/core/path-projector.hh>
+#include <hpp/core/path.hh>
+#include <hpp/pinocchio/device-sync.hh>
+#include <hpp/pinocchio/liegroup-element.hh>
+#include <hpp/pinocchio/util.hh>
+#include <hpp/util/exception-factory.hh>
+#include <pinocchio/multibody/data.hpp>
+#include <hpp/core/edge.hh>
+#include <hpp/core/nearest-neighbor.hh>
+#include <hpp/core/node.hh>
+#include <hpp/core/path-planner.hh>
+#include <hpp/core/path-planning-failed.hh>
+#include <hpp/core/path-projector.hh>
+#include <hpp/core/path-validation.hh>
+#include <hpp/core/path.hh>
+#include <hpp/core/problem-target/goal-configurations.hh>
+#include <hpp/core/problem.hh>
+#include <hpp/core/roadmap.hh>
+#include <hpp/core/steering-method.hh>
+#include <hpp/util/debug.hh>
+#include <hpp/util/timer.hh>
+#include <tuple>
+#include <hpp/core/path/hermite.hh>
+#include <hpp/core/path-vector.hh>
+#include <hpp/core/path-projector/recursive-hermite.hh>
 #include <iostream>
 #include <typeinfo>
 using namespace std;
 #include "hpp/core/path-projector/recursive-hermite.hh"
 
+#include <hpp/core/problem.hh>
 #include <hpp/core/config-projector.hh>
 #include <hpp/core/interpolated-path.hh>
 #include <hpp/core/path-vector.hh>
@@ -71,12 +105,26 @@ RecursiveHermite::RecursiveHermite(const DistancePtr_t& distance,
     throw std::invalid_argument("Steering method should be of type Hermite");
 }
 
+
+
+void test_create_hermite_with_timerange(const DevicePtr_t& device, ConstraintSetPtr_t constraints, Configuration_t init, Configuration_t end, interval_t timeRange){
+    path::HermitePtr_t path = path::Hermite::create_with_timeRange(device, init, end, constraints, timeRange);
+    Configuration_t res (init.size());
+    bool yyyy = path->impl_compute(res,timeRange.second) ;
+    cout << "end() : \n" <<  path->end()  << "\nimpl : \n" << res << endl;
+    cout << "error : \n" << path->end() - res << endl << endl; 
+
+    }
+
+
+
 bool RecursiveHermite::impl_apply(const PathPtr_t& path,
                                   core::PathPtr_t& proj) const {
   assert(path);
   bool success = false;
   PathVectorPtr_t pv = HPP_DYNAMIC_PTR_CAST(PathVector, path);
   if (!pv) {
+    cout << "Passed in the good part of impl_apply" << endl;
     if (!path->constraints() || !path->constraints()->configProjector()) {
       proj = path;
       success = true;
@@ -106,11 +154,13 @@ bool RecursiveHermite::impl_apply(const PathPtr_t& path,
   assert(proj);
   assert((proj->initial() - path->initial()).isZero());
   assert(!success || (proj->end() - path->end()).isZero());
+  proj->checkPath();
+  cout << success << endl;
+
   return success;
 }
 
 bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
-  cout << "done \n\n\n" << endl;
   ConstraintSetPtr_t constraints = path->constraints();
   if (!constraints) {
     proj = path;
@@ -124,11 +174,16 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
     proj = path;
     return true;
   }
-  cout << "done \n\n\n" << endl;
   steeringMethod_->constraints(constraints);
+  ProblemConstPtr_t Problem(steeringMethod_->problem());
+  ConfigValidationPtr_t cfgValidation(Problem->configValidations());
+  core::PathValidationPtr_t pathValidation(Problem->pathValidation());
+  ValidationReportPtr_t cfgReport;
 
-  const value_type thr = 2 * cp->errorThreshold() / M_;
+  core::PathValidationReportPtr_t pathReport;
 
+  const value_type thr = 2 * cp->errorThreshold() / 2;
+  cout << "error threshold : " << cp->errorThreshold() << " M : " << M_ << endl;
   std::vector<HermitePtr_t> ps;
   HermitePtr_t p = HPP_DYNAMIC_PTR_CAST(Hermite, path);
   if (!p) {
@@ -136,17 +191,23 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
     if (ip) {
       typedef InterpolatedPath::InterpolationPoints_t IPs_t;
       const IPs_t& ips = ip->interpolationPoints();
+      for (auto itera = ips.begin(); itera != ips.end(); itera++){
+        cout << "ips values : \n" << itera->second << endl;
+      }
       ps.reserve(ips.size() - 1);
       IPs_t::const_iterator _ip1 = ips.begin();
       std::advance(_ip1, 1);
-
+      int iter (0);
       for (IPs_t::const_iterator _ip0 = ips.begin(); _ip1 != ips.end();
            ++_ip0) {
-        cout << "done \n\n\n" << endl;
-        ps.push_back(
-            HPP_DYNAMIC_PTR_CAST(Hermite, steer(_ip0->second, _ip1->second)));
+            interval_t timeRange (interpolationTimes_[iter], interpolationTimes_[iter+1]);
+            test_create_hermite_with_timerange(Problem->robot(), constraints, _ip0->second, _ip1-> second, timeRange);
+            HermitePtr_t to_add = HPP_DYNAMIC_PTR_CAST(Hermite, steer_with_timeRange(_ip0->second, _ip1->second,timeRange));
+        ps.push_back(to_add
+            );
+            iter++;
         ++_ip1;
-        cout << "done___h \n\n\n" << endl;
+
       }
     } else {
       p = HPP_DYNAMIC_PTR_CAST(Hermite, steer(path->initial(), path->end()));
@@ -155,28 +216,44 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
   } else {
     ps.push_back(p);
   }
-  cout << "done \n\n\n" << endl;
+  cout <<"4" << endl;
+  core::PathPtr_t validPart;
   PathVectorPtr_t res =
       PathVector::create(path->outputSize(), path->outputDerivativeSize());
   bool success = true;
-  cout << "done \n\n\n" << endl;
+  cout << "Passed after res initilized \n ps.size() = "<< ps.size() << endl;
   for (std::size_t i = 0; i < ps.size(); ++i) {
     p = ps[i];
     p->computeHermiteLength();
-    if (p->hermiteLength() < thr) {
+
+    //if (p->hermiteLength() < thr) {
+      Hermite::all_info_about_hermite_path(p);
       res->appendPath(p);
       continue;
-    }
-    cout << "done \n\n\n" << endl;
+    //}
     PathVectorPtr_t r =
         PathVector::create(path->outputSize(), path->outputDerivativeSize());
     std::cout << p->hermiteLength() << " / " << thr << " : "
               << path->constraints()->name() << std::endl;
+    cout << "Just before recurse\n\n\n" << endl;
     success = recurse(p, r, thr);
+    if (success) {
+      cout << "recurse fine" << endl;
+    }
+    cout << "After recurse" << endl;
     res->concatenate(r);
     if (!success) break;
   }
-cout << "done \n\n\n" << endl;
+
+  if (!pathValidation->validate(res, false, validPart, pathReport)) {
+              hppDout(info, "Path is in collision.");
+              cout << "Path is in collision" << endl;
+            }
+  else {
+    cout << "res is validated" << endl;
+  }
+  cout << "Passed just before benchmark" << endl;
+
 #if HPP_ENABLE_BENCHMARK
   value_type min = std::numeric_limits<value_type>::max(), max = 0,
              totalLength = 0;
@@ -212,19 +289,22 @@ cout << "done \n\n\n" << endl;
       break;
   }
   return false;
-  cout << "done \n\n\n" << endl;
 }
+
+
 
 bool RecursiveHermite::recurse(const HermitePtr_t& path, PathVectorPtr_t& proj,
                                const value_type& acceptThr) const {
+
   if (path->hermiteLength() < acceptThr) {
     // TODO this does not work because it is not possible to remove
     // constraints from a path.
     // proj->appendPath (path->copy (ConstraintSetPtr_t()));
     proj->appendPath(path);
+    cout << "path appended to proj" << endl;
     return true;
   } else {
-    const value_type t = 0.5;  // path->timeRange().first + path->length() / 2;
+    const value_type t  = path->timeRange().first + path->length() / 2;
     bool success;
     const Configuration_t q1(path->eval(t, success));
     if (!success) {
@@ -235,23 +315,34 @@ bool RecursiveHermite::recurse(const HermitePtr_t& path, PathVectorPtr_t& proj,
     const Configuration_t q2 = path->end();
     // Velocities must be divided by two because each half is rescale
     // from [0, 0.5] to [0, 1]
-    const vector_t vHalf = path->velocity(t) / 2;
 
-    HermitePtr_t left = HPP_DYNAMIC_PTR_CAST(Hermite, steer(q0, q1));
+    const vector_t vHalf = path->velocity(t);
+    cout << "vHalf : "<<vHalf << endl << endl;
+
+    interval_t timeRange_left (path->timeRange().first, t);
+    HermitePtr_t left = HPP_DYNAMIC_PTR_CAST(Hermite, steer_with_timeRange(q0, q1, timeRange_left));
     if (!left) throw std::runtime_error("Not an path::Hermite");
-    left->v0(path->v0() / 2);
+    left->v0(path->v0());
     left->v1(vHalf);
     left->computeHermiteLength();
 
-    HermitePtr_t right = HPP_DYNAMIC_PTR_CAST(Hermite, steer(q1, q2));
+    interval_t timeRange_right (t, path->timeRange().second);
+    HermitePtr_t right = HPP_DYNAMIC_PTR_CAST(Hermite, steer_with_timeRange(q1, q2, timeRange_right));
     if (!right) throw std::runtime_error("Not an path::Hermite");
     right->v0(vHalf);
-    right->v1(path->v1() / 2);
+    right->v1(path->v1());
     right->computeHermiteLength();
 
+    cout << "\n                 info about left" << endl;
+    Hermite::all_info_about_hermite_path(left);
+    cout << "\n                 info about right " << endl; 
+    Hermite::all_info_about_hermite_path(right);
     const value_type stopThr = beta_ * path->hermiteLength();
+    cout << "Stop threshold : " << stopThr << endl;
     bool lStop = (left->hermiteLength() > stopThr);
+    cout << "left correct ? "<< lStop <<  endl; 
     bool rStop = (right->hermiteLength() > stopThr);
+    cout << "right correct ? "<< rStop <<  endl << endl ; 
     bool stop = rStop || lStop;
     // This is the inverse of the condition in the RSS paper. Is there a typo in
     // the paper ? if (std::max (left->hermiteLength(), right->hermiteLength())

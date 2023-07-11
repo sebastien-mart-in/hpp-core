@@ -98,11 +98,11 @@ Path::Path(const interval_t& interval, size_type outputSize,
       outputSize_(outputSize),
       outputDerivativeSize_(outputDerivativeSize),
       constraints_() {
-  cout << "passed by path with interval, outputsizes and constrait" << endl;
   if (constraints) {
     constraints_ = HPP_STATIC_PTR_CAST(ConstraintSet, constraints->copy());
   }
 }
+  
 
 // Constructor without constraints
 Path::Path(const interval_t& interval, size_type outputSize,
@@ -239,6 +239,8 @@ PathPtr_t Path::reverse() const {
 
 void Path::checkPath() const {
   using pinocchio::displayConfig;
+  bool verif_1 = false;
+  bool verif_2 = false;
   if (constraints()) {
     if (constraints_->configProjector())
       constraints_->configProjector()->rightHandSideAt(paramRange_.first);
@@ -271,7 +273,9 @@ void Path::checkPath() const {
           << *constraints();
       throw projection_error(oss.str().c_str());
     }
+
   }
+  
 }
 
 std::ostream& Path::print(std::ostream& os) const {

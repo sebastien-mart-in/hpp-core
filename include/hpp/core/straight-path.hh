@@ -34,6 +34,9 @@
 #include <hpp/core/fwd.hh>
 #include <hpp/core/path.hh>
 #include <hpp/pinocchio/liegroup-element.hh>
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 
 namespace hpp {
 namespace core {
