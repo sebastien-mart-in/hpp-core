@@ -32,6 +32,13 @@
 #include <hpp/core/config.hh>
 #include <hpp/core/fwd.hh>
 #include <hpp/core/path/spline.hh>
+#include <hpp/core/config-projector.hh>
+#include <hpp/core/path/hermite.hh>
+#include <hpp/core/projection-error.hh>
+#include <hpp/pinocchio/configuration.hh>
+#include <hpp/pinocchio/device.hh>
+#include <hpp/pinocchio/liegroup.hh>
+#include <hpp/util/debug.hh>
 
 namespace hpp {
 namespace core {
@@ -109,6 +116,31 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
     // derivative (res, timeRange().first, 1);
     // return res;
   }
+
+
+  Hermite(const DevicePtr_t& device, ConfigurationIn_t init,
+                 ConfigurationIn_t end, ConstraintSetPtr_t constraints, interval_t timeRange)
+    : parent_t(device, timeRange, constraints),
+      init_(init),
+      end_(end),
+      hermiteLength_(-1) {
+  assert(init.size() == robot_->configSize());
+  assert(device);
+  base(init);
+  parameters_.row(0).setZero();
+  pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, init, end,
+                                                           parameters_.row(3));
+                                                           
+  projectVelocities(init, end);
+}
+ static HermitePtr_t create_with_timeRange(const DevicePtr_t& device, ConfigurationIn_t init,
+    ConfigurationIn_t end,
+    ConstraintSetPtr_t constraints, interval_t timeRange) {
+    Hermite* ptr = new Hermite(device, init, end, constraints, timeRange);
+    HermitePtr_t shPtr(ptr);
+    ptr->init(shPtr);
+  return shPtr;
+}
 
   vector_t v1() const { return 3 * (parameters_.row(3) - parameters_.row(2)); }
 
