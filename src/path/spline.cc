@@ -206,6 +206,8 @@ void spline_basis_function<BernsteinBasis, Degree>::bound(
     Coeffs_t& res) {
   (void)order;  // Suppress unused warning when NDEBUG
   assert(order == 1);
+  assert(0 <= t0 && t0 <= 1);
+  assert(0 <= t1 && t1 <= 1);
   static const Coeffs_t b_up = absBound(true);
   static const Coeffs_t b_um = absBound(false);
   Coeffs_t bt0, bt1;
@@ -421,8 +423,12 @@ template <int _SplineType, int _Order>
 void Spline<_SplineType, _Order>::impl_velocityBound(
     vectorOut_t res, const value_type& t0, const value_type& t1) const {
   BasisFunctionVector_t ub;
-  BasisFunction_t::bound(1, t0, t1, ub);
-  ub /= length();
+  const value_type u0 =
+      (length() == 0 ? 0 : (t0 - paramRange().first) / paramLength());
+  const value_type u1 =
+      (length() == 0 ? 0 : (t1 - paramRange().first) / paramLength());
+  BasisFunction_t::bound(1, u0, u1, ub);
+  ub /= paramLength();
   res.noalias() = parameters_.cwiseAbs().transpose() * ub;
 }
 

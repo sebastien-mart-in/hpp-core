@@ -51,9 +51,19 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
   typedef Spline<BernsteinBasis, 3> parent_t;
 
   static void all_info_about_hermite_path(HermitePtr_t path){
+  
+  cout << "timRange" << path->timeRange().first << "    " << path->timeRange().second << endl;
   cout << "initial configuration : \n" << path->initial() << endl;
+  hpp::core::Configuration_t q_init(path->outputSize());
+  bool suc1 = path->impl_compute(q_init, path->timeRange().first);
+  cout << "initial config by impl_compute : \n" << q_init << endl;
+
   cout << "initial vector v0 : \n" << path->v0() << endl;
   cout << "final configuration : \n" << path->end() << endl;
+  hpp::core::Configuration_t q_end(path->outputSize());
+  bool suc2 = path->impl_compute(q_end, path->timeRange().second);
+  cout << "final config by impl_compute : \n" << q_end << endl;
+  
   cout << "final vector v1 : \n" << path->v1() << endl;
   cout << "hermiteLength : \n" << path->hermiteLength() << endl << endl;
 }
@@ -176,9 +186,8 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
   assert(device);
   base(init);
   parameters_.row(0).setZero();
-  pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, init, end,
-                                                           parameters_.row(3));
-                                                           
+  pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, end, init,
+                                                           parameters_.row(3));                                                           
   projectVelocities(init, end);
 }
 
@@ -205,3 +214,4 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
 }  //   namespace core
 }  // namespace hpp
 #endif  // HPP_CORE_PATH_HERMITE_HH
+ 

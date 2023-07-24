@@ -85,7 +85,6 @@ class HPP_CORE_DLLAPI Path {
   Configuration_t configAtParam(const value_type& param, bool& success) const {
     Configuration_t result(outputSize());
     success = impl_compute(result, param);
-    cout << success << "\n " <<result << endl;
     if (!success) return result;
     success = applyConstraints(result, param);
     return result;

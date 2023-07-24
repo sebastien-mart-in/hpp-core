@@ -239,8 +239,6 @@ PathPtr_t Path::reverse() const {
 
 void Path::checkPath() const {
   using pinocchio::displayConfig;
-  bool verif_1 = false;
-  bool verif_2 = false;
   if (constraints()) {
     if (constraints_->configProjector())
       constraints_->configProjector()->rightHandSideAt(paramRange_.first);
@@ -250,7 +248,7 @@ void Path::checkPath() const {
       hppDout(error, initial().transpose());
       oss << "Initial configuration of path does not satisfy the path "
              "constraints: q="
-          << displayConfig(initial()) << "; error=";
+          << displayConfig(initial()) << " tR 1: " << timeRange().first << " tR 2 : " << timeRange().second <<" ; error=";
       vector_t error;
       constraints()->isSatisfied(initial(), error);
       oss << displayConfig(error) << ".";
@@ -264,7 +262,7 @@ void Path::checkPath() const {
       hppDout(error, displayConfig(end()));
       oss << "End configuration of path does not satisfy the path "
              "constraints: q="
-          << displayConfig(end()) << "; error=";
+          << displayConfig(end()) << "at time " << timeRange().second << "; error=";
       vector_t error;
       constraints()->isSatisfied(end(), error);
       Configuration_t q = end();
