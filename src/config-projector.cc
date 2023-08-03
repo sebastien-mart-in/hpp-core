@@ -251,9 +251,10 @@ bool ConfigProjector::optimize(ConfigurationOut_t configuration,
 }
 
 void ConfigProjector::projectVectorOnKernel(ConfigurationIn_t from,
+                                            value_type time,
                                             vectorIn_t velocity,
                                             vectorOut_t result) {
-  solver_->projectVectorOnKernel(from, velocity, result);
+  solver_->projectVectorOnKernel(from, time, velocity, result);
 }
 
 void ConfigProjector::projectOnKernel(ConfigurationIn_t from,

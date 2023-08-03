@@ -257,6 +257,8 @@ void Path::checkPath() const {
     if (constraints_->configProjector())
       constraints_->configProjector()->rightHandSideAt(paramRange_.second);
     if (constraints() && !constraints()->isSatisfied(end())) {
+      cout << initial() << endl << end() << endl;
+      cout << paramRange_.second << endl;
       std::stringstream oss;
       hppDout(error, *constraints());
       hppDout(error, displayConfig(end()));

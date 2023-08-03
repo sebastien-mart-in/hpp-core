@@ -120,24 +120,24 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
   DevicePtr_t device() const;
 
   void v0(const vectorIn_t& speed) {
-    parameters_.row(1) = parameters_.row(0) + speed.transpose() / 3;
+    parameters_.row(1) =  speed.transpose() / 3 * (timeRange().second - timeRange().first);
     hermiteLength_ = -1;
   }
 
   void v1(const vectorIn_t& speed) {
-    parameters_.row(2) = parameters_.row(3) - speed.transpose() / 3;
+    parameters_.row(2) = parameters_.row(3) - speed.transpose() / 3 * (timeRange().second - timeRange().first);
     hermiteLength_ = -1;
   }
 
   vector_t v0() const {
-    return 3 * (parameters_.row(1) - parameters_.row(0));
+    return 3 * (parameters_.row(1) - parameters_.row(0)) / (timeRange().second - timeRange().first);
     // TODO Should be equivalent to
     // vector_t res (outputDerivativeSize());
     // derivative (res, timeRange().first, 1);
     // return res;
   }
 
-  vector_t v1() const { return 3 * (parameters_.row(3) - parameters_.row(2)); }
+  vector_t v1() const { return 3 * (parameters_.row(3) - parameters_.row(2)) /(timeRange().second - timeRange().first); }
 
   virtual Configuration_t initial() const { return init_; }
 
@@ -189,6 +189,7 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
   pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, end, init,
                                                            parameters_.row(3));                                                           
   projectVelocities(init, end);
+  
 }
 
   /// Copy constructor

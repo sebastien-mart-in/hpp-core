@@ -82,10 +82,10 @@ void Hermite::projectVelocities(ConfigurationIn_t qi, ConfigurationIn_t qe) {
     vector_t v(outputDerivativeSize());
     // Compute v0
     // proj->projectVectorOnKernel (qi, v_i2e, v);
-    proj->projectVectorOnKernel(qi, parameters_.row(3), v);
+    proj->projectVectorOnKernel(qi,timeRange().first, parameters_.row(3), v);
     v0(v);
     // Compute v1
-    proj->projectVectorOnKernel(qe, parameters_.row(3), v);
+    proj->projectVectorOnKernel(qe,timeRange().second, parameters_.row(3), v);
     v1(v);
   } else {
     v0(parameters_.row(3));
@@ -110,7 +110,7 @@ vector_t Hermite::velocity(const value_type& param) const {
     Configuration_t q(outputSize());
     if (!(*this)(q, param))
       throw projection_error("Configuration does not satisfy the constraints");
-    proj->projectVectorOnKernel(q, v, v);
+    proj->projectVectorOnKernel(q, param,v, v);
   }
   return v;
 }

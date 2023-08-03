@@ -178,8 +178,11 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
     if (ip) {
       typedef InterpolatedPath::InterpolationPoints_t IPs_t;
       const IPs_t& ips = ip->interpolationPoints();
+      cout << "ips length = " << ips.size() << endl;
+      int uuuuuu = 0;
       for (auto itera = ips.begin(); itera != ips.end(); itera++){
-        cout << "ips values : \n" << itera->second << endl;
+        cout << uuuuuu << endl << "ips values : \n" << itera->second << endl;
+        uuuuuu++;
       }
       ps.reserve(ips.size() - 1);
       IPs_t::const_iterator _ip1 = ips.begin();
@@ -188,13 +191,9 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
       for (IPs_t::const_iterator _ip0 = ips.begin(); _ip1 != ips.end();
            ++_ip0) {
         interval_t timeRange (interpolationTimes_[iter], interpolationTimes_[iter+1]);
+        cout << "timeRange : " << timeRange.first <<" , " << timeRange.second << endl;
         HermitePtr_t to_add = HPP_DYNAMIC_PTR_CAST(Hermite, steer_with_timeRange(_ip0->second, _ip1->second,timeRange));
         ps.push_back(to_add);
-        vector_t result_test(to_add->outputDerivativeSize());
-
-        cp->projectVectorOnKernel(_ip0->second,to_add->parameters().row(3),result_test);
-        cout << "\n before projection \n : " << to_add->parameters().row(3)  << endl;
-        cout << "after : \n" << result_test << endl << endl;
         iter++;
         ++_ip1;
       }
@@ -205,7 +204,6 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
   } else {
     ps.push_back(p);
   }
-  cout <<"4" << endl;
   core::PathPtr_t validPart;
   PathVectorPtr_t res =
       PathVector::create(path->outputSize(), path->outputDerivativeSize());
@@ -214,14 +212,14 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
   for (std::size_t i = 0; i < ps.size(); ++i) {
     p = ps[i];
     p->computeHermiteLength();
-    
     //
-    //if (p->hermiteLength() < thr) {
+    if (p->hermiteLength() < thr) {
       
       res->appendPath(p);
       continue;
     //
-    //}
+    }
+    cout << "passed eee" << endl;
     PathVectorPtr_t r =
         PathVector::create(path->outputSize(), path->outputDerivativeSize());
     cout << "Just before recurse\n\n\n" << endl;
