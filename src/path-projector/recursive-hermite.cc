@@ -161,6 +161,8 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
   if (!p) {
     InterpolatedPathPtr_t ip = HPP_DYNAMIC_PTR_CAST(InterpolatedPath, path);
     if (ip) {
+      // We start by interpolating all the points from our interpolatedPath with Hermite paths that 
+      // we store in a pathVector
       typedef InterpolatedPath::InterpolationPoints_t IPs_t;
       const IPs_t& ips = ip->interpolationPoints();
       ps.reserve(ips.size() - 1);
@@ -186,6 +188,8 @@ bool RecursiveHermite::project(const PathPtr_t& path, PathPtr_t& proj) const {
       PathVector::create(path->outputSize(), path->outputDerivativeSize());
   bool success = true;
   for (std::size_t i = 0; i < ps.size(); ++i) {
+    // If the hermite path already satisfies the constraint, it is added to our return pathVector
+    // otherwise, we send it to recurse
     p = ps[i];
     p->computeHermiteLength();
     if (p->hermiteLength() < thr) {      
