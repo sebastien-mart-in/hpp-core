@@ -143,8 +143,6 @@ class HPP_CORE_DLLAPI PathVector : public Path {
   /// Reversion of a path
   virtual PathPtr_t reverse() const;
 
-  Paths_t paths_;
-
  protected:
   /// Print path in a stream
   virtual std::ostream& print(std::ostream& os) const;
@@ -194,6 +192,7 @@ class HPP_CORE_DLLAPI PathVector : public Path {
                                   const value_type& param1) const;
 
  private:
+  Paths_t paths_;
   PathVectorWkPtr_t weak_;
 
  protected:
