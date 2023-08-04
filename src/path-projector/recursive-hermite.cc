@@ -26,37 +26,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 
-#include <hpp/constraints/differentiable-function.hh>
-#include <hpp/constraints/implicit.hh>
-#include <hpp/core/config-projector.hh>
-#include <hpp/core/config-validations.hh>
-#include <hpp/core/configuration-shooter.hh>
-#include <hpp/core/path-validation.hh>
-#include <hpp/core/problem.hh>
-#include <hpp/core/roadmap.hh>
-#include <hpp/core/path-projector.hh>
-#include <hpp/core/path.hh>
-#include <hpp/pinocchio/device-sync.hh>
-#include <hpp/pinocchio/liegroup-element.hh>
-#include <hpp/pinocchio/util.hh>
-#include <hpp/util/exception-factory.hh>
-#include <pinocchio/multibody/data.hpp>
-#include <hpp/core/edge.hh>
-#include <hpp/core/nearest-neighbor.hh>
-#include <hpp/core/node.hh>
-#include <hpp/core/path-planner.hh>
-#include <hpp/core/path-planning-failed.hh>
-#include <hpp/core/path-projector.hh>
-#include <hpp/core/path-validation.hh>
-#include <hpp/core/path.hh>
-#include <hpp/core/problem-target/goal-configurations.hh>
-#include <hpp/core/problem.hh>
-#include <hpp/core/roadmap.hh>
-#include <hpp/core/steering-method.hh>
-#include <hpp/util/debug.hh>
-#include <hpp/util/timer.hh>
-#include <tuple>
-#include <hpp/core/path-vector.hh>
 #include "hpp/core/path-projector/recursive-hermite.hh"
 
 #include <hpp/core/problem.hh>
