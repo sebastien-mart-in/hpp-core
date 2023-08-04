@@ -29,9 +29,6 @@
 #ifndef HPP_CORE_STEERING_METHOD_HERMITE_HH
 #define HPP_CORE_STEERING_METHOD_HERMITE_HH
 
-#include <iostream>
-#include <typeinfo>
-using namespace std;
 #include <hpp/core/fwd.hh>
 #include <hpp/core/path/hermite.hh>
 #include <hpp/core/problem.hh>
@@ -76,7 +73,7 @@ class HPP_CORE_DLLAPI Hermite : public SteeringMethod {
     path->computeHermiteLength();
     return path;
   }
-
+  /// create a path between two configurations and set the path's timeRange
   PathPtr_t impl_compute_with_timeRange(ConfigurationIn_t q1, ConfigurationIn_t q2, interval_t timeRange) const {
     core::path::HermitePtr_t path =
     core::path::Hermite::create_with_timeRange(problem()->robot(), q1, q2, constraints(), timeRange);
@@ -97,6 +94,7 @@ class HPP_CORE_DLLAPI Hermite : public SteeringMethod {
     SteeringMethod::init(weak);
     weak_ = weak;
   }
+
  private:
   HermiteWkPtr_t weak_;
 };  // Hermite

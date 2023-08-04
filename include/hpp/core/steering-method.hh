@@ -35,10 +35,6 @@
 #include <hpp/core/projection-error.hh>
 #include <hpp/util/debug.hh>
 
-#include <iostream>
-#include <typeinfo>
-using namespace std;
-
 namespace hpp {
 namespace core {
 /// \addtogroup steering_method
@@ -60,7 +56,6 @@ class HPP_CORE_DLLAPI SteeringMethod {
     PathPtr_t path;
     try {
       path = impl_compute(q1, q2);
-
     } catch (const projection_error& e) {
       hppDout(info, "Could not build path: " << e.what());
     }
@@ -115,10 +110,8 @@ class HPP_CORE_DLLAPI SteeringMethod {
   /// create a path between two configurations
   virtual PathPtr_t impl_compute(ConfigurationIn_t q1,
                                  ConfigurationIn_t q2) const = 0;
-
   /// Store weak pointer to itself.
   void init(SteeringMethodWkPtr_t weak) { weak_ = weak; }
-
 
   ProblemConstWkPtr_t problem_;
   

@@ -27,10 +27,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 
-
-#include <iostream>
-#include <typeinfo>
-using namespace std;
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/weak_ptr.hpp>
 #include <hpp/core/config-projector.hh>
@@ -101,8 +97,7 @@ Path::Path(const interval_t& interval, size_type outputSize,
   if (constraints) {
     constraints_ = HPP_STATIC_PTR_CAST(ConstraintSet, constraints->copy());
   }
-}
-  
+}  
 
 // Constructor without constraints
 Path::Path(const interval_t& interval, size_type outputSize,
@@ -248,7 +243,7 @@ void Path::checkPath() const {
       hppDout(error, initial().transpose());
       oss << "Initial configuration of path does not satisfy the path "
              "constraints: q="
-          << displayConfig(initial()) << " tR 1: " << timeRange().first << " tR 2 : " << timeRange().second <<" ; error=";
+          << displayConfig(initial()) << " ; error=";
       vector_t error;
       constraints()->isSatisfied(initial(), error);
       oss << displayConfig(error) << ".";
@@ -257,14 +252,12 @@ void Path::checkPath() const {
     if (constraints_->configProjector())
       constraints_->configProjector()->rightHandSideAt(paramRange_.second);
     if (constraints() && !constraints()->isSatisfied(end())) {
-      cout << initial() << endl << end() << endl;
-      cout << paramRange_.second << endl;
       std::stringstream oss;
       hppDout(error, *constraints());
       hppDout(error, displayConfig(end()));
       oss << "End configuration of path does not satisfy the path "
              "constraints: q="
-          << displayConfig(end()) << "at time " << timeRange().second << "; error=";
+          << displayConfig(end()) << "; error=";
       vector_t error;
       constraints()->isSatisfied(end(), error);
       Configuration_t q = end();
@@ -273,9 +266,7 @@ void Path::checkPath() const {
           << *constraints();
       throw projection_error(oss.str().c_str());
     }
-
   }
-  
 }
 
 std::ostream& Path::print(std::ostream& os) const {

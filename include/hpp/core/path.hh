@@ -30,9 +30,6 @@
 #ifndef HPP_CORE_PATH_HH
 #define HPP_CORE_PATH_HH
 
-#include <iostream>
-#include <typeinfo>
-using namespace std;
 #include <hpp/core/config.hh>
 #include <hpp/core/constraint-set.hh>
 #include <hpp/core/deprecated.hh>

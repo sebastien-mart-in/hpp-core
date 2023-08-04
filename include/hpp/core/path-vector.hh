@@ -42,8 +42,6 @@ namespace core {
 /// Concatenation of several paths
 class HPP_CORE_DLLAPI PathVector : public Path {
  public:
-  void checkPathAt(value_type t);
-  
   typedef Path parent_t;
   /// \name Construction, destruction, copy
   /// \{
@@ -145,12 +143,11 @@ class HPP_CORE_DLLAPI PathVector : public Path {
   /// Reversion of a path
   virtual PathPtr_t reverse() const;
 
-  virtual std::ostream& print(std::ostream& os) const;
   Paths_t paths_;
 
  protected:
   /// Print path in a stream
-  
+  virtual std::ostream& print(std::ostream& os) const;
   /// Constructor
   PathVector(std::size_t outputSize, std::size_t outputDerivativeSize)
       : parent_t(std::make_pair(0, 0), outputSize, outputDerivativeSize),

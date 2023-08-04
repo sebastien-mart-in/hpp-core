@@ -32,16 +32,13 @@
 #include "hpp/core/config.hh"
 #include "hpp/core/fwd.hh"
 #include "hpp/core/path-projector.hh"
-
 #include <hpp/core/problem.hh>
 #include <hpp/core/path/hermite.hh>
-
 #include <hpp/core/steering-method/hermite.hh>
 
 namespace hpp {
 namespace core {
 namespace pathProjector {
-
 /// Implements
 /// "Fast Interpolation and Time-Optimization on Implicit Contact Submanifolds"
 /// from Kris Hauser.
@@ -59,15 +56,7 @@ class HPP_CORE_DLLAPI RecursiveHermite : public PathProjector {
                                       const value_type& step);
 
   static RecursiveHermitePtr_t create(const ProblemConstPtr_t& problem,
-                                      const value_type& step, vector_t interpolationTimes){
-  DistancePtr_t distance (problem->distance());
-  SteeringMethodPtr_t steeringMethod (problem->steeringMethod());
-  value_type beta = steeringMethod->problem()->getParameter("PathProjection/RecursiveHermite/Beta")
-                        .floatValue();
-  hppDout(info, "beta is " << beta);
-  return RecursiveHermitePtr_t(
-      new RecursiveHermite(distance, steeringMethod, step, beta, interpolationTimes));
-                                      }
+                                      const value_type& step, vector_t interpolationTimes);
 
   bool impl_apply(const PathPtr_t& path, core::PathPtr_t& projection) const;
 
@@ -77,24 +66,16 @@ class HPP_CORE_DLLAPI RecursiveHermite : public PathProjector {
   RecursiveHermite(const DistancePtr_t& distance,
                                    const SteeringMethodPtr_t& steeringMethod,
                                    const value_type& M, const value_type& beta, 
-                                   vector_t interpolationTimes)
-    : PathProjector(distance, steeringMethod, false), M_(M), beta_(beta), interpolationTimes_(interpolationTimes) {
-  // beta should be between 0.5 and 1.
-  if (beta_ < 0.5 || 1 < beta_)
-    throw std::invalid_argument("Beta should be between 0.5 and 1");
-  if (!HPP_DYNAMIC_PTR_CAST(hpp::core::steeringMethod::Hermite, steeringMethod))
-    throw std::invalid_argument("Steering method should be of type Hermite");
-  }
+                                   vector_t interpolationTimes);
 
-  PathPtr_t steer_with_timeRange(ConfigurationIn_t q1, ConfigurationIn_t q2, interval_t timeRange) const {
-    steeringMethod::HermitePtr_t sm (HPP_DYNAMIC_PTR_CAST(core::steeringMethod::Hermite, steeringMethod_));
-    return sm->impl_compute_with_timeRange(q1,q2, timeRange);
-  };
+  PathPtr_t steer_with_timeRange(ConfigurationIn_t q1, ConfigurationIn_t q2, interval_t timeRange);
 
 
   RecursiveHermite(const DistancePtr_t& distance,
                    const SteeringMethodPtr_t& steeringMethod,
                    const value_type& M, const value_type& beta);
+
+  PathPtr_t steer_with_timeRange(ConfigurationIn_t q1, ConfigurationIn_t q2, interval_t timeRange) const;
 
   bool project(const PathPtr_t& path, PathPtr_t& proj) const;
 

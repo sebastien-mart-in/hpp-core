@@ -26,9 +26,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 // DAMAGE.
 
-#include <iostream>
-#include <typeinfo>
-using namespace std;
 #include <hpp/core/config-projector.hh>
 #include <hpp/core/path/hermite.hh>
 #include <hpp/core/projection-error.hh>
@@ -40,6 +37,16 @@ using namespace std;
 namespace hpp {
 namespace core {
 namespace path {
+
+HermitePtr_t Hermite::create_with_timeRange(const DevicePtr_t& device, ConfigurationIn_t init,
+    ConfigurationIn_t end,
+    ConstraintSetPtr_t constraints, interval_t timeRange) {
+    Hermite* ptr = new Hermite(device, init, end, constraints, timeRange);
+    HermitePtr_t shPtr(ptr);
+    ptr->init(shPtr);
+  return shPtr;
+}
+
 Hermite::Hermite(const DevicePtr_t& device, ConfigurationIn_t init,
                  ConfigurationIn_t end, ConstraintSetPtr_t constraints)
     : parent_t(device, interval_t(0, 1), constraints),
@@ -66,6 +73,23 @@ Hermite::Hermite(const Hermite& path, const ConstraintSetPtr_t& constraints)
       hermiteLength_(-1) {
   projectVelocities(init_, end_);
 }
+
+Hermite::Hermite(const DevicePtr_t& device, ConfigurationIn_t init,
+                 ConfigurationIn_t end, ConstraintSetPtr_t constraints, interval_t timeRange)
+    : parent_t(device, timeRange, constraints),
+      init_(init),
+      end_(end),
+      hermiteLength_(-1) {
+  assert(init.size() == robot_->configSize());
+  assert(device);
+  base(init);
+  parameters_.row(0).setZero();
+  pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, end, init,
+                                                           parameters_.row(3));                                                           
+  projectVelocities(init, end);
+  
+}
+
 
 void Hermite::init(HermitePtr_t self) {
   parent_t::init(self);
@@ -95,8 +119,7 @@ void Hermite::projectVelocities(ConfigurationIn_t qi, ConfigurationIn_t qe) {
 }
 
 void Hermite::computeHermiteLength() {
-  auto a = parameters_.bottomRows<3>() - parameters_.topRows<3>();
-  hermiteLength_ = (a)
+  hermiteLength_ = (parameters_.bottomRows<3>() - parameters_.topRows<3>())
                        .rowwise()
                        .norm()
                        .sum();

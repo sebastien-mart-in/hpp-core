@@ -34,9 +34,6 @@
 #include <hpp/core/steering-method.hh>
 #include <hpp/util/pointer.hh>
 #include <hpp/util/timer.hh>
-#include <iostream>
-#include <typeinfo>
-using namespace std;
 
 namespace hpp {
 namespace core {
@@ -71,7 +68,6 @@ PathPtr_t PathProjector::steer(ConfigurationIn_t q1,
   // assert (!result->constraints ());
   return result;
 }
-
 
 bool PathProjector::apply(const PathPtr_t& path, PathPtr_t& proj) const {
   HPP_START_TIMECOUNTER(PathProjection);

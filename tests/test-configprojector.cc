@@ -190,38 +190,5 @@ BOOST_AUTO_TEST_CASE(copy) {
   bool success(copy->solver().getRightHandSide(constraint, rhs));
   BOOST_CHECK(success);
 }
-/*
-BOOST_AUTO_TEST_CASE(project_vector_on_kernel) {
-  using constraints::Implicit;
-  using constraints::ImplicitPtr_t;
-  DevicePtr_t dev = createRobot();
-  JointPtr_t xyz = dev->getJointByName("root_joint");
-  ConfigProjectorPtr_t projector =
-      ConfigProjector::create(dev, "test", 1e-4, 20);
-  matrix3_t rot;
-  rot.setIdentity();
-  vector3_t zero;
-  zero.setZero();
-  PositionPtr_t position(
-      Position::create("Position", dev, xyz, Transform3f(rot, zero),
-                       Transform3f(rot, vector3_t(1, 1, 1))));
-  ComparisonTypes_t equality(3, constraints::Equality);
-  ImplicitPtr_t constraint(Implicit::create(position, equality));
-  projector->add(constraint);
-
-  vector_t i_test(3);
-  Configuration_t tt;
-  tt = Configuration_t::Zero(3);
-  tt << 1.,10.,1.;
-  vector_t yy(3);
-  yy << 1,-211,1;
-
-  projector->projectVectorOnKernel(tt,yy,i_test);
-  
-  std::cout << i_test << std::endl;
-  
-  BOOST_CHECK(false);
-}
-*/
 
 BOOST_AUTO_TEST_SUITE_END()

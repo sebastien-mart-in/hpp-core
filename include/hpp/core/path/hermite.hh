@@ -50,24 +50,6 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
  public:
   typedef Spline<BernsteinBasis, 3> parent_t;
 
-  static void all_info_about_hermite_path(HermitePtr_t path){
-  
-  cout << "timRange" << path->timeRange().first << "    " << path->timeRange().second << endl;
-  cout << "initial configuration : \n" << path->initial() << endl;
-  hpp::core::Configuration_t q_init(path->outputSize());
-  bool suc1 = path->impl_compute(q_init, path->timeRange().first);
-  cout << "initial config by impl_compute : \n" << q_init << endl;
-
-  cout << "initial vector v0 : \n" << path->v0() << endl;
-  cout << "final configuration : \n" << path->end() << endl;
-  hpp::core::Configuration_t q_end(path->outputSize());
-  bool suc2 = path->impl_compute(q_end, path->timeRange().second);
-  cout << "final config by impl_compute : \n" << q_end << endl;
-  
-  cout << "final vector v1 : \n" << path->v1() << endl;
-  cout << "hermiteLength : \n" << path->hermiteLength() << endl << endl;
-}
-
   /// Destructor
   virtual ~Hermite() {}
 
@@ -80,7 +62,10 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
     return shPtr;
   }
 
-  
+  static HermitePtr_t create_with_timeRange(const DevicePtr_t& device, ConfigurationIn_t init, 
+                                              ConfigurationIn_t end, 
+                                              ConstraintSetPtr_t constraints, 
+                                              interval_t timeRange);
 
   /// Create copy and return shared pointer
   /// \param path path to copy
@@ -149,15 +134,6 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
 
   vector_t velocity(const value_type& t) const;
 
-  static HermitePtr_t create_with_timeRange(const DevicePtr_t& device, ConfigurationIn_t init,
-    ConfigurationIn_t end,
-    ConstraintSetPtr_t constraints, interval_t timeRange) {
-    Hermite* ptr = new Hermite(device, init, end, constraints, timeRange);
-    HermitePtr_t shPtr(ptr);
-    ptr->init(shPtr);
-  return shPtr;
-}
-
  protected:
   /// Print path in a stream
   virtual std::ostream& print(std::ostream& os) const {
@@ -177,20 +153,7 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
           ConfigurationIn_t end, ConstraintSetPtr_t constraints);
 
   Hermite(const DevicePtr_t& device, ConfigurationIn_t init,
-                 ConfigurationIn_t end, ConstraintSetPtr_t constraints, interval_t timeRange)
-    : parent_t(device, timeRange, constraints),
-      init_(init),
-      end_(end),
-      hermiteLength_(-1) {
-  assert(init.size() == robot_->configSize());
-  assert(device);
-  base(init);
-  parameters_.row(0).setZero();
-  pinocchio::difference<hpp::pinocchio::RnxSOnLieGroupMap>(robot_, end, init,
-                                                           parameters_.row(3));                                                           
-  projectVelocities(init, end);
-  
-}
+                 ConfigurationIn_t end, ConstraintSetPtr_t constraints, interval_t timeRange);
 
   /// Copy constructor
   Hermite(const Hermite& path);
@@ -215,4 +178,3 @@ class HPP_CORE_DLLAPI Hermite : public Spline<BernsteinBasis, 3> {
 }  //   namespace core
 }  // namespace hpp
 #endif  // HPP_CORE_PATH_HERMITE_HH
- 
